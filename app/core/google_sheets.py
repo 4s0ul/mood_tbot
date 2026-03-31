@@ -3,6 +3,7 @@ from pathlib import Path
 
 import gspread
 from gspread import Worksheet
+from loguru import logger
 
 
 class WorksheetsCache:
@@ -21,21 +22,41 @@ class WorksheetsCache:
         return self._worksheets[worksheet_ix]
 
 
-class GoogleSheets:
+class GoogleSpreadsheet:
     def __init__(self, creds_path: Path, g_spread_key: str) -> None:
-        self.gc = gspread.service_account(filename=creds_path)
-        self.spread = self.gc.open_by_key(g_spread_key)
+        try:
+            self.gc = gspread.service_account(filename=creds_path)
+        except Exception:
+            logger.exception("GoogleSpreadsheet: failed to autorize")
+            raise
+        try:
+            self.spread = self.gc.open_by_key(g_spread_key)
+        except Exception:
+            logger.exception("GoogleSpreadsheet: spreadsheets key is wrong")
+            raise
         self._worksheets: WorksheetsCache | None = None
+
+    def close_spreadsheet(self):
+        self.spread.client.session.close()
 
     def _get_worksheet(self, worksheet_ix) -> Worksheet:
         if not self._worksheets:
             self._worksheets = WorksheetsCache()
         worksheet = self._worksheets.get_worksheet(worksheet_ix)
         if not worksheet:
-            worksheet = self.spread.get_worksheet(worksheet_ix)
+            try:
+                worksheet = self.spread.get_worksheet(worksheet_ix)
+            except Exception:
+                logger.exception(
+                    f"GoogleSpreadsheet: no worksheet with index: {worksheet_ix}"
+                )
+                raise
             self._worksheets.add_worksheet(worksheet_ix, worksheet)
         return worksheet
 
     def append_row(self, values: Sequence, worksheet_ix: int = 0):
         worksheet = self._get_worksheet(worksheet_ix)
-        worksheet.append_row(values=values)
+        try:
+            worksheet.append_row(values=values)
+        except Exception:
+            logger.exception(f"GoogleSpreadsheet: failed to append row: {values}")
