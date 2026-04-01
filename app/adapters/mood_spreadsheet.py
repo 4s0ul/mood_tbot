@@ -11,7 +11,7 @@ class MoodSpreadsheet:
     def write_mood_result(self, mood_result: MoodResult, worksheet_ix: int = 0) -> None:
         try:
             self.gs_manager.append_row(
-                values=list(mood_result.model_dump().values()),
+                values=list(mood_result.model_dump(mode="json").values()),
                 worksheet_ix=worksheet_ix,
             )
         except Exception:

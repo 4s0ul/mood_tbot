@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import date, datetime
 
 from pydantic import BaseModel
 
@@ -7,7 +7,7 @@ class MoodResult(BaseModel):
     tg_id: int
     username: str
     name: str
-    date: datetime
+    date: date
     day_number: int
     mood_score: float
     emotions: str  # ????
