@@ -30,19 +30,24 @@ async def process_mood(
     mood_ss: MoodSpreadsheet,
 ) -> None:
     try:
-        score = int(message.text)
-        if score < 1 or score > 5:
-            raise ValueError
+        if not message.text:
+            raise ValueError("Message text is None")
+
+        score = int(message.text.strip())
+        if not 1 <= score <= 5:
+            raise ValueError("Score must be from 1 to 5")
     except TypeError, ValueError:
         await message.answer("Please enter a number from 1 to 5.")
         return
 
-    if not message.from_user or not message.from_user.username:
-        raise ValueError
+    if not message.from_user:
+        await message.answer("Couldn't identify user.")
+        await state.clear()
+        return
 
     mood_result = MoodResult(
         tg_id=message.from_user.id,
-        username=message.from_user.username,
+        username=message.from_user.username or "",
         name=message.from_user.full_name,
         date=date.today(),
         day_number=1,
@@ -54,8 +59,6 @@ async def process_mood(
         submitted_at=datetime.now(),
     )
 
+    await mood_ss.write_mood_result(mood_result)
     await message.answer(f"Got it! Your mood: {score}")
-
-    mood_ss.write_mood_result(mood_result)
-
     await state.clear()

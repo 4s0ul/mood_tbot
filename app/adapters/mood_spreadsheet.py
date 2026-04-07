@@ -4,13 +4,15 @@ from app.core import GoogleSpreadsheet
 from app.models import MoodResult
 
 
-class MoodSpreadsheet:
+class MoodSpreadsheet:  # TODO: make this stuff as a separate worker
     def __init__(self, gs_manager: GoogleSpreadsheet) -> None:
         self.gs_manager = gs_manager
 
-    def write_mood_result(self, mood_result: MoodResult, worksheet_ix: int = 0) -> None:
+    async def write_mood_result(
+        self, mood_result: MoodResult, worksheet_ix: int = 0
+    ) -> None:
         try:
-            self.gs_manager.append_row(
+            await self.gs_manager.append_row(
                 values=list(mood_result.model_dump(mode="json").values()),
                 worksheet_ix=worksheet_ix,
             )

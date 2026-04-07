@@ -24,7 +24,7 @@ async def on_startup(bot: Bot, dispatcher: Dispatcher) -> None:
         ]
     )
 
-    gs_manager = GoogleSpreadsheet(
+    gs_manager = await GoogleSpreadsheet.create(
         creds_path=settings.g_creds_path,
         g_spread_key=settings.g_spread_key,
     )
@@ -41,7 +41,7 @@ async def on_shutdown(bot: Bot, dispatcher: Dispatcher) -> None:
 
     gs_manager: GoogleSpreadsheet | None = dispatcher.workflow_data.get("gs_manager")
     if gs_manager is not None:
-        gs_manager.close_spreadsheet()
+        await gs_manager.close_spreadsheet()
 
     logger.info("Shutdown complete")
 
