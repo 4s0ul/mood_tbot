@@ -3,62 +3,87 @@ from datetime import date, datetime
 from aiogram import Router
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
-from aiogram.fsm.state import State, StatesGroup
-from aiogram.types import Message
+from aiogram.types import CallbackQuery, Message, User
 
 from app.adapters.mood_spreadsheet import MoodSpreadsheet
+from app.callbacks import EnergyLevelCallback, MoodScoreCallback
+from app.keyboards import energy_keyboard, mood_score_keyboard
 from app.models import MoodResult
-
-
-class MoodState(StatesGroup):
-    waiting_for_mood = State()
-
+from app.states import MoodState
 
 router = Router()
 
 
-@router.message(Command("mood"))
-async def mood_handler(message: Message, state: FSMContext) -> None:
-    await message.answer("How's your mood on a scale of 1 to 5?")
-    await state.set_state(MoodState.waiting_for_mood)
-
-
-@router.message(MoodState.waiting_for_mood)
-async def process_mood(
-    message: Message,
-    state: FSMContext,
-    mood_ss: MoodSpreadsheet,
-) -> None:
-    try:
-        if not message.text:
-            raise ValueError("Message text is None")
-
-        score = int(message.text.strip())
-        if not 1 <= score <= 5:
-            raise ValueError("Score must be from 1 to 5")
-    except TypeError, ValueError:
-        await message.answer("Please enter a number from 1 to 5.")
-        return
-
-    if not message.from_user:
-        await message.answer("Couldn't identify user.")
-        await state.clear()
-        return
-
-    mood_result = MoodResult(
-        tg_id=message.from_user.id,
-        username=message.from_user.username or "",
-        name=message.from_user.full_name,
+def build_mood_result(user: User, data: dict) -> MoodResult:
+    return MoodResult(
+        tg_id=user.id,
+        username=user.username or "",
+        name=user.full_name,
         date=date.today(),
         day_number=1,
-        mood_score=score,
-        emotions="idk",
+        mood_score=data["mood_score"],
+        emotions=data["energy_level"],
         daily_question="idk",
         daily_answer="idk",
         comment="idk",
         submitted_at=datetime.now(),
+        # add your energy field here later if MoodResult has it
     )
 
+
+@router.message(Command("mood"))
+async def start_mood_flow(message: Message, state: FSMContext) -> None:
+    await state.set_state(MoodState.waiting_for_mood)
+    await message.answer(
+        "How's your mood today?",
+        reply_markup=mood_score_keyboard(),
+    )
+
+
+@router.callback_query(MoodState.waiting_for_mood, MoodScoreCallback.filter())
+async def save_mood_score(
+    callback: CallbackQuery,
+    callback_data: MoodScoreCallback,
+    state: FSMContext,
+) -> None:
+    await callback.answer()
+
+    await state.update_data(mood_score=callback_data.score)
+    await state.set_state(MoodState.waiting_for_energy)
+
+    if isinstance(callback.message, Message):
+        await callback.message.edit_text(
+            f"Got it. Your mood today: {callback_data.score}/5"
+        )
+
+    if isinstance(callback.message, Message):
+        await callback.message.answer(
+            "Оцените вашу энергию:\n\n"
+            "Высокая — чувствую себя бодро и энергично, есть силы на учебу/работу/творчество\n\n"
+            "Средняя — чувствую себя нейтрально/спокойно, без сильного прилива энергии\n\n"
+            "Низкая — чувствую себя подавленно и устало, нет ни на что сил",
+            reply_markup=energy_keyboard(),
+        )
+
+
+@router.callback_query(MoodState.waiting_for_energy, EnergyLevelCallback.filter())
+async def save_energy(
+    callback: CallbackQuery,
+    callback_data: EnergyLevelCallback,
+    state: FSMContext,
+    mood_ss: MoodSpreadsheet,
+) -> None:
+    await callback.answer()
+
+    await state.update_data(energy_level=callback_data.level)
+    data = await state.get_data()
+
+    mood_result = build_mood_result(callback.from_user, data)
     await mood_ss.write_mood_result(mood_result)
-    await message.answer(f"Got it! Your mood: {score}")
+
+    if isinstance(callback.message, Message):
+        await callback.message.edit_text(
+            f"Понял. Сегодня ваша энергия {callback_data.level}"
+        )
+
     await state.clear()
