@@ -1,7 +1,15 @@
 from aiogram.types import InlineKeyboardMarkup
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
-from app.callbacks import EnergyLevelCallback, MoodScoreCallback
+from app.callbacks import EmotionCallback, EnergyLevelCallback, MoodScoreCallback
+
+EMOTION_LABELS: dict[str, str] = {
+    "inspiration": "Воодушевление",
+    "calm": "Спокойствие",
+    "sadness": "Тоска / грусть",
+    "anxiety": "Тревога / раздражение",
+    "fatigue": "Усталость",
+}
 
 
 def mood_score_keyboard() -> InlineKeyboardMarkup:
@@ -32,6 +40,26 @@ def energy_keyboard() -> InlineKeyboardMarkup:
     builder.button(
         text="Низкая",
         callback_data=EnergyLevelCallback(level="low"),
+    )
+
+    builder.adjust(1)
+    return builder.as_markup()
+
+
+def emotions_keyboard(selected: list[str] | None = None) -> InlineKeyboardMarkup:
+    selected_set = set(selected or [])
+    builder = InlineKeyboardBuilder()
+
+    for code, label in EMOTION_LABELS.items():
+        prefix = "✓ " if code in selected_set else ""
+        builder.button(
+            text=f"{prefix}{label}",
+            callback_data=EmotionCallback(action="toggle", code=code),
+        )
+
+    builder.button(
+        text="Готово",
+        callback_data=EmotionCallback(action="done", code="done"),
     )
 
     builder.adjust(1)

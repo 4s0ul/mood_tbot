@@ -3,7 +3,7 @@ from aiogram.filters import CommandStart
 from aiogram.types import Message
 from loguru import logger
 
-from app.texts.start import start_text
+from app.texts import start_text
 
 router = Router()
 

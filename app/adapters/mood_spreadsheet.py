@@ -1,10 +1,11 @@
 from loguru import logger
 
 from app.core import GoogleSpreadsheet
+from app.keyboards import EMOTION_LABELS
 from app.models import MoodResult
 
 
-class MoodSpreadsheet:  # TODO: make this stuff as a separate worker
+class MoodSpreadsheet:
     def __init__(self, gs_manager: GoogleSpreadsheet) -> None:
         self.gs_manager = gs_manager
 
@@ -12,9 +13,16 @@ class MoodSpreadsheet:  # TODO: make this stuff as a separate worker
         self, mood_result: MoodResult, worksheet_ix: int = 0
     ) -> None:
         try:
+            result_dict = mood_result.model_dump(mode="json")
+            result_dict["emotions"] = ", ".join(
+                EMOTION_LABELS.get(code, "unknown_code")
+                for code in result_dict.get("emotions", [])
+            )
             await self.gs_manager.append_row(
-                values=list(mood_result.model_dump(mode="json").values()),
+                values=list(result_dict.values()),
                 worksheet_ix=worksheet_ix,
             )
         except Exception:
-            logger.exception("MoodSpreadsheet: failed to write result: {mood_result}")
+            logger.exception(
+                f"MoodSpreadsheet: failed to write result for tg_id={mood_result.tg_id}: {mood_result}"
+            )
