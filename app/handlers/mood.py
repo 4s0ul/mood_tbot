@@ -4,15 +4,22 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
 
 from app.adapters.mood_spreadsheet import MoodSpreadsheet
-from app.callbacks import EmotionCallback, EnergyLevelCallback, MoodScoreCallback
+from app.callbacks import (
+    EmotionCallback,
+    EnergyLevelCallback,
+    MoodFactorCallback,
+    MoodScoreCallback,
+)
 from app.keyboards import (
+    MOOD_FACTOR_LABELS,
     emotions_keyboard,
     energy_keyboard,
+    mood_factor_keyboard,
     mood_score_keyboard,
 )
 from app.models import MoodResult
 from app.states import MoodState
-from app.texts import eneregy_level_text
+from app.texts import eneregy_level_text, mood_factor_other_text, mood_factor_text
 
 router = Router()
 
@@ -111,7 +118,6 @@ async def toggle_emotion(
 async def finish_emotions(
     callback: CallbackQuery,
     state: FSMContext,
-    mood_ss: MoodSpreadsheet,
 ) -> None:
     data = await state.get_data()
     selected: list[str] = data.get("emotions", [])
@@ -121,11 +127,69 @@ async def finish_emotions(
         return
 
     await callback.answer()
-
-    mood_result = MoodResult(**data)
-    await mood_ss.write_mood_result(mood_result)
+    await state.set_state(MoodState.waiting_for_main_factor)
 
     if isinstance(callback.message, Message):
         await callback.message.edit_text("Понял. Эмоции сохранены.")
+        await callback.message.answer(
+            mood_factor_text(),
+            reply_markup=mood_factor_keyboard(),
+        )
+
+
+@router.callback_query(
+    MoodState.waiting_for_main_factor,
+    MoodFactorCallback.filter(),
+)
+async def save_main_factor(
+    callback: CallbackQuery,
+    callback_data: MoodFactorCallback,
+    state: FSMContext,
+    mood_ss: MoodSpreadsheet,
+) -> None:
+    code = callback_data.code
+
+    if code == "other":
+        await callback.answer()
+        await state.set_state(MoodState.waiting_for_main_factor_comment)
+
+        if isinstance(callback.message, Message):
+            await callback.message.edit_text("Понял. Ты выбрал(а): Другое.")
+            await callback.message.answer(mood_factor_other_text())
+        return
+
+    factor_text = MOOD_FACTOR_LABELS[code]
+
+    await state.update_data(mood_factor=factor_text)
+    data = await state.get_data()
+    mood_result = MoodResult(**data)
+
+    await mood_ss.write_mood_result(mood_result)
+    await callback.answer()
+
+    if isinstance(callback.message, Message):
+        await callback.message.edit_text(f"Понял. Фактор сохранён: {factor_text}")
+
+    await state.clear()
+
+
+@router.message(MoodState.waiting_for_main_factor_comment)
+async def save_main_factor_comment(
+    message: Message,
+    state: FSMContext,
+    mood_ss: MoodSpreadsheet,
+) -> None:
+    text = (message.text or "").strip()
+
+    if not text:
+        await message.answer("Напиши коротко, что именно повлияло на настроение.")
+        return
+
+    await state.update_data(mood_factor=text)
+    data = await state.get_data()
+    mood_result = MoodResult(**data)
+
+    await mood_ss.write_mood_result(mood_result)
+    await message.answer("Понял. Причина сохранена.")
 
     await state.clear()

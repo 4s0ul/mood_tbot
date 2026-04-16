@@ -11,6 +11,7 @@ class MoodResult(BaseModel):
     mood_score: int | None = None
     energy_level: str | None = None
     emotions: list | None = None
+    mood_factor: str | None = None
     # daily_question: str | None = None
     # daily_answer: str | None = None
     # comment: str | None = None

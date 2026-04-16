@@ -12,3 +12,7 @@ class EnergyLevelCallback(CallbackData, prefix="energy"):
 class EmotionCallback(CallbackData, prefix="emotion"):
     action: str
     code: str
+
+
+class MoodFactorCallback(CallbackData, prefix="factor"):
+    code: str
