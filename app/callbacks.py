@@ -16,3 +16,7 @@ class EmotionCallback(CallbackData, prefix="emotion"):
 
 class MoodFactorCallback(CallbackData, prefix="factor"):
     code: str
+
+
+class DayChangeWishCallback(CallbackData, prefix="factor"):
+    code: str

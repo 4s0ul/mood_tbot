@@ -2,7 +2,7 @@ from loguru import logger
 
 from app.core import GoogleSpreadsheet
 from app.keyboards import EMOTION_LABELS
-from app.models import MoodResult
+from app.schemas import MoodResult
 
 
 class MoodSpreadsheet:

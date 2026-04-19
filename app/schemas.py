@@ -12,6 +12,7 @@ class MoodResult(BaseModel):
     energy_level: str | None = None
     emotions: list | None = None
     mood_factor: str | None = None
+    day_change_wish: str | None = None
     # daily_question: str | None = None
     # daily_answer: str | None = None
     # comment: str | None = None

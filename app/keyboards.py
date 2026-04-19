@@ -2,6 +2,7 @@ from aiogram.types import InlineKeyboardMarkup
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 from app.callbacks import (
+    DayChangeWishCallback,
     EmotionCallback,
     EnergyLevelCallback,
     MoodFactorCallback,
@@ -88,6 +89,28 @@ def mood_factor_keyboard() -> InlineKeyboardMarkup:
         builder.button(
             text=label,
             callback_data=MoodFactorCallback(code=code),
+        )
+
+    builder.adjust(1)
+    return builder.as_markup()
+
+
+DAY_CHANGE_WISH_LABELS: dict[str, str] = {
+    "alot": "Да, многое",
+    "alittle": "Да, немногое",
+    "allgood": "Нет, все устраивало",
+    "noidea": "Затрудняюсь ответить",
+    "other": "Другое",
+}
+
+
+def day_change_wish_keyboard() -> InlineKeyboardMarkup:
+    builder = InlineKeyboardBuilder()
+
+    for code, label in DAY_CHANGE_WISH_LABELS.items():
+        builder.button(
+            text=label,
+            callback_data=DayChangeWishCallback(code=code),
         )
 
     builder.adjust(1)
