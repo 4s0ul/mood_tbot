@@ -1,4 +1,5 @@
-from datetime import datetime, timedelta, timezone
+import uuid
+from datetime import date, datetime, timedelta, timezone
 
 from sqlalchemy import Column
 from sqlalchemy.dialects.sqlite import JSON
@@ -8,24 +9,31 @@ from sqlmodel import Field, SQLModel
 class MoodResult(SQLModel, table=True):
     __tablename__ = "mood_results"
 
-    id: int | None = Field(default=None, primary_key=True)
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
 
-    tg_id: int | None = Field(default=None, index=True)
-    username: str | None = None
-    fullname: str | None = None
+    tg_id: int = Field(index=True)
+    username: str = Field(default="")
+    fullname: str
+    mood_score: int
+    energy_level: str
+    emotions: list[str] = Field(
+        default_factory=list,
+        sa_column=Column(JSON, nullable=False),
+    )
+    mood_factor: str
+    day_change_wish: str
 
-    mood_score: int | None = None
-    energy_level: str | None = None
-
-    # SQLite has JSON support through SQLAlchemy's JSON type.
-    emotions: list[str] | None = Field(
-        default=None,
-        sa_column=Column(JSON, nullable=True),
+    submitted_at: datetime = Field(
+        default_factory=lambda: datetime.now(timezone(timedelta(hours=3)))
     )
 
-    mood_factor: str | None = None
-    day_change_wish: str | None = None
 
+class DailyQuestion(SQLModel, table=True):
+    __tablename__ = "daily_questions"
+
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    questioin: str
+    question_date: date
     submitted_at: datetime = Field(
         default_factory=lambda: datetime.now(timezone(timedelta(hours=3)))
     )
