@@ -1,6 +1,10 @@
 from aiogram.filters.callback_data import CallbackData
 
 
+class MoodResumeCallback(CallbackData, prefix="mood_resume"):
+    action: str
+
+
 class MoodScoreCallback(CallbackData, prefix="mood"):
     score: int
 
@@ -20,3 +24,19 @@ class MoodFactorCallback(CallbackData, prefix="factor"):
 
 class DayChangeWishCallback(CallbackData, prefix="factor"):
     code: str
+
+
+class DailyQuestionsMenuCallback(CallbackData, prefix="daily_questions"):
+    action: str
+
+
+class CommentDecisionCallback(CallbackData, prefix="comment"):
+    action: str
+
+
+class PracticeDecisionCallback(CallbackData, prefix="practice_decision"):
+    action: str
+
+
+class PracticeSelectCallback(CallbackData, prefix="practice_select"):
+    practice_id: str

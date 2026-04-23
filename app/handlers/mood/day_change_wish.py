@@ -1,18 +1,20 @@
+from datetime import date
+
 from aiogram import Router
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
 
-from app.adapters.mood_spreadsheet import MoodSpreadsheet
+from app.adapters import DailyQuestionRepository
 from app.callbacks import (
     DayChangeWishCallback,
 )
-from app.keyboards import (
-    DAY_CHANGE_WISH_LABELS,
-)
-from app.schemas import MoodResult
+from app.db.engine import AsyncSessionFactory
+from app.keyboards import DAY_CHANGE_WISH_LABELS, comment_decision_keyboard
 from app.states import MoodState
 from app.texts import (
+    comment_decision_text,
     day_change_wish_other_text,
+    no_daily_question_text,
 )
 
 router = Router()
@@ -26,7 +28,6 @@ async def save_day_change_wish(
     callback: CallbackQuery,
     callback_data: DayChangeWishCallback,
     state: FSMContext,
-    mood_ss: MoodSpreadsheet,
 ) -> None:
     code = callback_data.code
 
@@ -40,27 +41,42 @@ async def save_day_change_wish(
         return
 
     day_change_wish_text_value = DAY_CHANGE_WISH_LABELS[code]
-
     await state.update_data(day_change_wish=day_change_wish_text_value)
-    data = await state.get_data()
-    mood_result = MoodResult(**data)
 
-    await mood_ss.write_mood_result(mood_result)
+    async with AsyncSessionFactory() as session:
+        daily_question_repo = DailyQuestionRepository(session)
+        daily_question = await daily_question_repo.get_by_date(date.today())
+
     await callback.answer()
 
-    if isinstance(callback.message, Message):
-        await callback.message.edit_text(
-            f"Понял. Желание изменить день сохранено: {day_change_wish_text_value}"
-        )
+    if daily_question is not None:
+        await state.update_data(daily_question=daily_question.question)
+        await state.set_state(MoodState.waiting_for_daily_answer)
 
-    await state.clear()
+        if isinstance(callback.message, Message):
+            await callback.message.edit_text(
+                f"Понял. Желание изменить день сохранено: {day_change_wish_text_value}"
+            )
+            await callback.message.answer(f"Вопрос дня:\n\n{daily_question.question}")
+    else:
+        await state.update_data(daily_question="", daily_answer="")
+        await state.set_state(MoodState.waiting_for_comment_decision)
+
+        if isinstance(callback.message, Message):
+            await callback.message.edit_text(
+                f"Понял. Желание изменить день сохранено: {day_change_wish_text_value}"
+            )
+            await callback.message.answer(no_daily_question_text())
+            await callback.message.answer(
+                comment_decision_text(),
+                reply_markup=comment_decision_keyboard(),
+            )
 
 
 @router.message(MoodState.waiting_for_day_change_wish_comment)
 async def save_day_change_wish_comment(
     message: Message,
     state: FSMContext,
-    mood_ss: MoodSpreadsheet,
 ) -> None:
     text = (message.text or "").strip()
 
@@ -69,10 +85,22 @@ async def save_day_change_wish_comment(
         return
 
     await state.update_data(day_change_wish=text)
-    data = await state.get_data()
-    mood_result = MoodResult(**data)
 
-    await mood_ss.write_mood_result(mood_result)
-    await message.answer("Понял. Ответ сохранён.")
+    async with AsyncSessionFactory() as session:
+        daily_question_repo = DailyQuestionRepository(session)
+        daily_question = await daily_question_repo.get_by_date(date.today())
 
-    await state.clear()
+    if daily_question is not None:
+        await state.update_data(daily_question=daily_question.question)
+        await state.set_state(MoodState.waiting_for_daily_answer)
+
+        await message.answer(f"Вопрос дня:\n\n{daily_question.question}")
+    else:
+        await state.update_data(daily_question="", daily_answer="")
+        await state.set_state(MoodState.waiting_for_comment_decision)
+
+        await message.answer(no_daily_question_text())
+        await message.answer(
+            comment_decision_text(),
+            reply_markup=comment_decision_keyboard(),
+        )

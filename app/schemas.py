@@ -13,9 +13,10 @@ class MoodResult(BaseModel):
     emotions: list | None = None
     mood_factor: str | None = None
     day_change_wish: str | None = None
-    # daily_question: str | None = None
-    # daily_answer: str | None = None
-    # comment: str | None = None
+    daily_question: str | None = None
+    daily_answer: str | None = None
+    comment: str | None = None
+    selected_practice: str | None = None
     submitted_at: datetime = Field(
         default_factory=lambda: datetime.now(timezone(timedelta(hours=3)))
     )

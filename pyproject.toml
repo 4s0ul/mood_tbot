@@ -6,6 +6,7 @@ readme = "README.md"
 requires-python = ">=3.14"
 dependencies = [
     "aiogram>=3.26.0",
+    "aiosqlite>=0.22.1",
     "gspread>=6.2.1",
     "loguru>=0.7.3",
     "pydantic>=2.12.5",

@@ -2,26 +2,61 @@ from aiogram.types import InlineKeyboardMarkup
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 from app.callbacks import (
+    CommentDecisionCallback,
+    DailyQuestionsMenuCallback,
     DayChangeWishCallback,
     EmotionCallback,
     EnergyLevelCallback,
     MoodFactorCallback,
+    MoodResumeCallback,
     MoodScoreCallback,
+    PracticeDecisionCallback,
+    PracticeSelectCallback,
 )
+from app.db.models import Practice
 
 EMOTION_LABELS: dict[str, str] = {
     "inspiration": "Воодушевление",
-    "calm": "Спокойствие",
+    "joy": "Радость",
+    "calm": "Спокойствие / умиротворение",
     "sadness": "Тоска / грусть",
     "anxiety": "Тревога / раздражение",
     "fatigue": "Усталость",
+    "indifference": "Равнодушие",
+    "hurt": "Обида",
+    "shame": "Стыд",
+    "guilt": "Вина",
+    "disappointment": "Разочарование",
+    "anger": "Злость",
 }
+
+
+def mood_resume_keyboard() -> InlineKeyboardMarkup:
+    builder = InlineKeyboardBuilder()
+
+    builder.button(
+        text="Продолжить",
+        callback_data=MoodResumeCallback(action="continue"),
+    )
+    builder.button(
+        text="Отмена",
+        callback_data=MoodResumeCallback(action="cancel"),
+    )
+
+    builder.adjust(1)
+    return builder.as_markup()
 
 
 def mood_score_keyboard() -> InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()
 
-    moods = {"depressed": 1, "ploho": 2, "norm": 3, "good": 4, "ya ahuennii": 5}
+    moods = {
+        "очень хорошее": 5,
+        "скорее хорошее": 4,
+        "нормальное": 3,
+        "скорее плохоe": 2,
+        "очень плохое": 1,
+    }
     for score in moods:
         builder.button(
             text=str(score),
@@ -64,7 +99,7 @@ def emotions_keyboard(selected: list[str] | None = None) -> InlineKeyboardMarkup
         )
 
     builder.button(
-        text="Готово",
+        text="Записать ответ",
         callback_data=EmotionCallback(action="done", code="done"),
     )
 
@@ -111,6 +146,71 @@ def day_change_wish_keyboard() -> InlineKeyboardMarkup:
         builder.button(
             text=label,
             callback_data=DayChangeWishCallback(code=code),
+        )
+
+    builder.adjust(1)
+    return builder.as_markup()
+
+
+def comment_decision_keyboard() -> InlineKeyboardMarkup:
+    builder = InlineKeyboardBuilder()
+
+    builder.button(
+        text="Да",
+        callback_data=CommentDecisionCallback(action="yes"),
+    )
+    builder.button(
+        text="Нет",
+        callback_data=CommentDecisionCallback(action="no"),
+    )
+
+    builder.adjust(1)
+    return builder.as_markup()
+
+
+def daily_questions_menu_keyboard() -> InlineKeyboardMarkup:
+    builder = InlineKeyboardBuilder()
+
+    builder.button(
+        text="Показать последние 14",
+        callback_data=DailyQuestionsMenuCallback(action="list"),
+    )
+    builder.button(
+        text="Добавить / изменить вопрос",
+        callback_data=DailyQuestionsMenuCallback(action="upsert"),
+    )
+    builder.button(
+        text="Отмена",
+        callback_data=DailyQuestionsMenuCallback(action="cancel"),
+    )
+
+    builder.adjust(1)
+    return builder.as_markup()
+
+
+def practice_offer_keyboard() -> InlineKeyboardMarkup:
+    builder = InlineKeyboardBuilder()
+
+    builder.button(
+        text="Да",
+        callback_data=PracticeDecisionCallback(action="yes"),
+    )
+    builder.button(
+        text="Нет",
+        callback_data=PracticeDecisionCallback(action="no"),
+    )
+
+    builder.adjust(1)
+    return builder.as_markup()
+
+
+def practices_keyboard(practices: list[Practice]) -> InlineKeyboardMarkup:
+    builder = InlineKeyboardBuilder()
+
+    for practice in practices:
+        builder.button(
+            text=practice.title,
+            callback_data=PracticeSelectCallback(practice_id=str(practice.id)),
         )
 
     builder.adjust(1)

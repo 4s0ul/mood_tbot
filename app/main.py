@@ -7,6 +7,7 @@ from loguru import logger
 from app.adapters import MoodSpreadsheet
 from app.bot import create_bot, create_dispatcher
 from app.core import GoogleSpreadsheet
+from app.db.init_db import init_db
 from app.handlers import register_handlers
 from app.middlewares import ServicesMiddleware
 from app.settings import settings
@@ -23,6 +24,8 @@ async def on_startup(bot: Bot, dispatcher: Dispatcher) -> None:
             BotCommand(command="mood", description="Share your mood"),
         ]
     )
+
+    await init_db()
 
     gs_manager = await GoogleSpreadsheet.create(
         creds_path=settings.g_creds_path,
