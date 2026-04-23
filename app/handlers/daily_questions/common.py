@@ -1,8 +1,6 @@
 from aiogram.types import TelegramObject, User
 
-ADMIN_TG_IDS: set[int] = {
-    863821159,
-}
+from app.settings import settings
 
 
 def extract_user(event: TelegramObject) -> User | None:
@@ -12,4 +10,4 @@ def extract_user(event: TelegramObject) -> User | None:
 
 def is_admin(event: TelegramObject) -> bool:
     user = extract_user(event)
-    return user is not None and user.id in ADMIN_TG_IDS
+    return user is not None and user.id in settings.admin_tg_ids
