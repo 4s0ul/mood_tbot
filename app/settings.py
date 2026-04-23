@@ -17,12 +17,23 @@ class Settings(BaseSettings):
 
     @field_validator("admin_tg_ids", mode="before")
     @classmethod
-    def parse_admin_tg_ids(cls, value: str | list[int]) -> list[int]:
-        if isinstance(value, list):
-            return value
-        if not value:
+    def parse_admin_tg_ids(cls, value: object) -> list[int]:
+        if value is None:
             return []
-        return [int(item.strip()) for item in value.split(",") if item.strip()]
+
+        if isinstance(value, int):
+            return [value]
+
+        if isinstance(value, list):
+            return [int(item) for item in value]
+
+        if isinstance(value, str):
+            value = value.strip()
+            if not value:
+                return []
+            return [int(item.strip()) for item in value.split(",") if item.strip()]
+
+        raise TypeError(f"Unsupported admin_tg_ids value: {type(value)!r}")
 
 
 settings = Settings()
