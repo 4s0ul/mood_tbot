@@ -1,5 +1,5 @@
-from aiogram.types import InlineKeyboardMarkup
-from aiogram.utils.keyboard import InlineKeyboardBuilder
+from aiogram.types import InlineKeyboardMarkup, ReplyKeyboardMarkup
+from aiogram.utils.keyboard import InlineKeyboardBuilder, ReplyKeyboardBuilder
 
 from app.callbacks import (
     CommentDecisionCallback,
@@ -12,6 +12,7 @@ from app.callbacks import (
     MoodScoreCallback,
     PracticeDecisionCallback,
     PracticeSelectCallback,
+    PracticesMenuCallback,
 )
 from app.db.models import Practice
 
@@ -29,6 +30,19 @@ EMOTION_LABELS: dict[str, str] = {
     "disappointment": "Разочарование",
     "anger": "Злость",
 }
+
+
+def main_menu_keyboard() -> ReplyKeyboardMarkup:
+    builder = ReplyKeyboardBuilder()
+
+    builder.button(text="Заполнить дневник")
+    builder.button(text="Список практик")
+
+    builder.adjust(2)
+    return builder.as_markup(
+        resize_keyboard=True,
+        input_field_placeholder="Выбери действие",
+    )
 
 
 def mood_resume_keyboard() -> InlineKeyboardMarkup:
@@ -214,4 +228,13 @@ def practices_keyboard(practices: list[Practice]) -> InlineKeyboardMarkup:
         )
 
     builder.adjust(1)
+    return builder.as_markup()
+
+
+def practices_back_keyboard() -> InlineKeyboardMarkup:
+    builder = InlineKeyboardBuilder()
+    builder.button(
+        text="Назад к списку",
+        callback_data=PracticesMenuCallback(action="back"),
+    )
     return builder.as_markup()

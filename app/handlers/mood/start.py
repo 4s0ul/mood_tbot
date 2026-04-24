@@ -1,4 +1,4 @@
-from aiogram import Router
+from aiogram import F, Router
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
@@ -22,6 +22,7 @@ async def _start_mood_question(message: Message, state: FSMContext) -> None:
 
 
 @router.message(Command("mood"))
+@router.message(F.text == "Заполнить дневник")
 async def start_mood_flow(message: Message, state: FSMContext) -> None:
     if not message.from_user:
         await message.answer("Не удалось определить пользователя.")

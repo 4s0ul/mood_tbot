@@ -22,6 +22,7 @@ async def on_startup(bot: Bot, dispatcher: Dispatcher) -> None:
             BotCommand(command="help", description="Show help"),
             BotCommand(command="about", description="About the bot"),
             BotCommand(command="mood", description="Share your mood"),
+            BotCommand(command="practices", description="Show available practices"),
         ]
     )
 

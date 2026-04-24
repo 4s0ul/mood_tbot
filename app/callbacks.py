@@ -40,3 +40,7 @@ class PracticeDecisionCallback(CallbackData, prefix="practice_decision"):
 
 class PracticeSelectCallback(CallbackData, prefix="practice_select"):
     practice_id: str
+
+
+class PracticesMenuCallback(CallbackData, prefix="practices_menu"):
+    action: str

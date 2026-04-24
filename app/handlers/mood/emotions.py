@@ -67,5 +67,6 @@ async def finish_emotions(
         await callback.message.edit_text("Понял. Эмоции сохранены.")
         await callback.message.answer(
             mood_factor_text(),
+            parse_mode="HTML",
             reply_markup=mood_factor_keyboard(),
         )

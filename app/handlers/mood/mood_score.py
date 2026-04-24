@@ -34,9 +34,10 @@ async def save_mood_score(
 
     if isinstance(callback.message, Message):
         await callback.message.edit_text(
-            f"Got it. Your mood today: {callback_data.score}/5"
+            f"Понял. Сегодня твое настроение: {callback_data.score}/5"
         )
         await callback.message.answer(
             eneregy_level_text(),
+            parse_mode="HTML",
             reply_markup=energy_keyboard(),
         )

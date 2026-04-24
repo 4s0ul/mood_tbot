@@ -12,6 +12,8 @@ from app.states import MoodState
 
 router = Router()
 
+ENERGY_LEVELS = {"high": "Высокая", "medium": "Средняя", "low": "Низкая"}
+
 
 @router.callback_query(MoodState.waiting_for_energy, EnergyLevelCallback.filter())
 async def save_energy(
@@ -29,7 +31,7 @@ async def save_energy(
 
     if isinstance(callback.message, Message):
         await callback.message.edit_text(
-            f"Понял. Сегодня ваша энергия: {callback_data.level}"
+            f"Понял. Сегодня ваша энергия: {ENERGY_LEVELS[callback_data.level]}"
         )
         await callback.message.answer(
             "3. Какие эмоции вы испытали сегодня?\nМожно выбрать несколько вариантов.",
