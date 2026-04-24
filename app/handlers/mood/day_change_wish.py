@@ -36,7 +36,7 @@ async def save_day_change_wish(
         await state.set_state(MoodState.waiting_for_day_change_wish_comment)
 
         if isinstance(callback.message, Message):
-            await callback.message.edit_text("Понял. Ты выбрал(а): Другое.")
+            await callback.message.edit_text("Ты выбрал(а): Другое.")
             await callback.message.answer(day_change_wish_other_text())
         return
 
@@ -55,7 +55,7 @@ async def save_day_change_wish(
 
         if isinstance(callback.message, Message):
             await callback.message.edit_text(
-                f"Понял. Желание изменить день сохранено: {day_change_wish_text_value}"
+                f"Желание изменить день сохранено: {day_change_wish_text_value}"
             )
             await callback.message.answer(f"Вопрос дня:\n\n{daily_question.question}")
     else:
@@ -64,7 +64,7 @@ async def save_day_change_wish(
 
         if isinstance(callback.message, Message):
             await callback.message.edit_text(
-                f"Понял. Желание изменить день сохранено: {day_change_wish_text_value}"
+                f"Желание изменить день сохранено: {day_change_wish_text_value}"
             )
             await callback.message.answer(no_daily_question_text())
             await callback.message.answer(

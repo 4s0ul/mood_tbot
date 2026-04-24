@@ -34,7 +34,7 @@ async def save_main_factor(
         await state.set_state(MoodState.waiting_for_main_factor_comment)
 
         if isinstance(callback.message, Message):
-            await callback.message.edit_text("Понял. Ты выбрал(а): Другое.")
+            await callback.message.edit_text("Ты выбрал(а): Другое.")
             await callback.message.answer(mood_factor_other_text())
         return
 
@@ -45,7 +45,7 @@ async def save_main_factor(
     await callback.answer()
 
     if isinstance(callback.message, Message):
-        await callback.message.edit_text(f"Понял. Фактор сохранён: {factor_text}")
+        await callback.message.edit_text(f"Фактор сохранён: {factor_text}")
         await callback.message.answer(
             day_change_wish_text(),
             reply_markup=day_change_wish_keyboard(),

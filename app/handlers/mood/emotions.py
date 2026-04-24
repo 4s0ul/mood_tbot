@@ -57,14 +57,14 @@ async def finish_emotions(
     selected: list[str] = data.get("emotions", [])
 
     if not selected:
-        await callback.answer("Выберите хотя бы одну эмоцию", show_alert=True)
+        await callback.answer("Выбери хотя бы одну эмоцию", show_alert=True)
         return
 
     await callback.answer()
     await state.set_state(MoodState.waiting_for_main_factor)
 
     if isinstance(callback.message, Message):
-        await callback.message.edit_text("Понял. Эмоции сохранены.")
+        await callback.message.edit_text("Эмоции сохранены.")
         await callback.message.answer(
             mood_factor_text(),
             parse_mode="HTML",

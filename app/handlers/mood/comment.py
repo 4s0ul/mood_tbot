@@ -29,7 +29,7 @@ async def save_comment_decision(
         await state.set_state(MoodState.waiting_for_comment_text)
 
         if isinstance(callback.message, Message):
-            await callback.message.edit_text("Понял. Напиши комментарий.")
+            await callback.message.edit_text("Напиши комментарий.")
         return
 
     await state.update_data(comment="")

@@ -31,9 +31,9 @@ async def save_energy(
 
     if isinstance(callback.message, Message):
         await callback.message.edit_text(
-            f"Понял. Сегодня ваша энергия: {ENERGY_LEVELS[callback_data.level]}"
+            f"Сегодня твоя энергия: {ENERGY_LEVELS[callback_data.level]}"
         )
         await callback.message.answer(
-            "3. Какие эмоции вы испытали сегодня?\nМожно выбрать несколько вариантов.",
+            "Какие эмоции ты испытал(а) сегодня?\nМожно выбрать несколько вариантов.",
             reply_markup=emotions_keyboard(),
         )
