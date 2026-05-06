@@ -14,10 +14,7 @@ async def start_handler(message: Message) -> None:
     if not message.from_user:
         logger.error("No from_user")
         return
-    if not message.from_user.username:
-        logger.error("Coulnd't extract username")
-        return
     await message.answer(
-        start_text(user_name=message.from_user.username),
+        start_text(first_name=message.from_user.first_name),
         reply_markup=main_menu_keyboard(),
     )

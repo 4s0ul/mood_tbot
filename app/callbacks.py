@@ -18,11 +18,11 @@ class EmotionCallback(CallbackData, prefix="emotion"):
     code: str
 
 
-class MoodFactorCallback(CallbackData, prefix="factor"):
+class MoodFactorCallback(CallbackData, prefix="mood_factor"):
     code: str
 
 
-class DayChangeWishCallback(CallbackData, prefix="factor"):
+class DayChangeWishCallback(CallbackData, prefix="day_change_wish"):
     code: str
 
 

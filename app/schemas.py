@@ -7,7 +7,6 @@ class MoodResult(BaseModel):
     tg_id: int | None = None
     username: str | None = None
     fullname: str | None = None
-    # day_number: int | None = None
     mood_score: int | None = None
     energy_level: str | None = None
     emotions: list | None = None
